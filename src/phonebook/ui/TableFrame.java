@@ -8,13 +8,14 @@ package phonebook.ui;
 import phonebook.Main;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.table.TableColumnModel;
+import phonebook.db.entity.Contact;
 
 /**
  *
@@ -23,8 +24,6 @@ import javax.swing.table.TableColumnModel;
 public class TableFrame extends javax.swing.JFrame {
 
     private String connection;
-    private ResultSet rs;
-    private Statement stmt;
     private DatabaseTableModel dbtm;
     private ArrayList<String> columnNames;
 
@@ -33,6 +32,9 @@ public class TableFrame extends javax.swing.JFrame {
      */
     public TableFrame() {
         initComponents();
+
+        setLocationRelativeTo(null);
+
         connection = "jdbc:sqlite:database.sl3";
         loadData();
 
@@ -44,7 +46,7 @@ public class TableFrame extends javax.swing.JFrame {
         try (Connection conn = DriverManager.getConnection(connection)) {
 
 //            columnNames = new ArrayList<>();
-            stmt = conn.createStatement();
+            Statement stmt = conn.createStatement();
 //            String sqlColNames = "PRAGMA TABLE_INFO('contacts')";
 //            ResultSet rseq = stmt.executeQuery(sqlColNames);
 //            while (rseq.next()) {
@@ -53,12 +55,10 @@ public class TableFrame extends javax.swing.JFrame {
 //            }
 
             String sqlData = "SELECT * FROM contacts";
-            rs = stmt.executeQuery(sqlData);
+            ResultSet rs = stmt.executeQuery(sqlData);
             try {
                 dbtm.setDataSource(rs);
                 jtData.setModel(dbtm);
-                rs.close();
-                conn.close();
             } catch (Exception ex) {
                 Logger.getLogger(TableFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -79,12 +79,29 @@ public class TableFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jpmData = new javax.swing.JPopupMenu();
+        jmiDataEditContact = new javax.swing.JMenuItem();
+        jmiDataDeleteContact = new javax.swing.JMenuItem();
         jScrollPane1 = new javax.swing.JScrollPane();
         jtData = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jmContacts = new javax.swing.JMenu();
         jmiAddContact = new javax.swing.JMenuItem();
+
+        jMenuItem1.setText("jMenuItem1");
+
+        jmiDataEditContact.setText("Edit...");
+        jmiDataEditContact.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jmiDataEditContactActionPerformed(evt);
+            }
+        });
+        jpmData.add(jmiDataEditContact);
+
+        jmiDataDeleteContact.setText("Delete");
+        jpmData.add(jmiDataDeleteContact);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Contacts");
@@ -97,6 +114,7 @@ public class TableFrame extends javax.swing.JFrame {
 
             }
         ));
+        jtData.setComponentPopupMenu(jpmData);
         jScrollPane1.setViewportView(jtData);
 
         jMenu1.setText("File");
@@ -136,9 +154,70 @@ public class TableFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    public void saveContact(Contact cont) {
+
+        String sql = "INSERT INTO contacts VALUES(null, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(connection)) {
+            PreparedStatement prepareStatement = conn.prepareStatement(sql);
+            prepareStatement.setString(1, cont.getFullName());
+            prepareStatement.setString(2, cont.getPhoneNum());
+            prepareStatement.setString(3, cont.getEmail());
+            prepareStatement.setString(4, cont.getSkype());
+            prepareStatement.setString(5, cont.getImage());
+
+            prepareStatement.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(TableFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        loadData();
+    }
+
     private void jmiAddContactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiAddContactActionPerformed
- 
+
+        AddContactFrame contactFrame = new AddContactFrame(this);
+        contactFrame.setLocationRelativeTo(this);
+        contactFrame.setVisible(true);
+
     }//GEN-LAST:event_jmiAddContactActionPerformed
+
+    private Contact getContact(int id) {
+        String sql = "SELECT * FROM contacts WHERE id = " + id;
+
+        try (Connection conn = DriverManager.getConnection(connection)) {
+            Statement stat = conn.createStatement();
+            ResultSet rs = stat.executeQuery(sql);
+
+            if (rs.next()) {
+                String name = rs.getString("name");
+                String phone = rs.getString("phone_number");
+                String mail = rs.getString("email");
+                String skype = rs.getString("skype");
+                String image = rs.getString("image");
+
+                return new Contact(name, phone, mail, skype, image);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(TableFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    private void jmiDataEditContactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiDataEditContactActionPerformed
+
+        int row = jtData.getSelectedRow();
+
+        int id = (int) jtData.getValueAt(row, 0);
+        Contact contact = getContact(id);
+
+        AddContactFrame contactFrame = new AddContactFrame(this, contact);
+        contactFrame.setLocationRelativeTo(this);
+        contactFrame.setVisible(true);
+
+    }//GEN-LAST:event_jmiDataEditContactActionPerformed
 
     /**
      * @param args the command line arguments
@@ -177,6 +256,7 @@ public class TableFrame extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new TableFrame().setVisible(true);
             }
@@ -186,9 +266,13 @@ public class TableFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenu jmContacts;
     private javax.swing.JMenuItem jmiAddContact;
+    private javax.swing.JMenuItem jmiDataDeleteContact;
+    private javax.swing.JMenuItem jmiDataEditContact;
+    private javax.swing.JPopupMenu jpmData;
     private javax.swing.JTable jtData;
     // End of variables declaration//GEN-END:variables
 }
