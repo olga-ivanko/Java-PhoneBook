@@ -57,17 +57,6 @@ public class DatabaseTableModel extends AbstractTableModel {
         }
     }
 
-//    public ArrayList setColumnName(ResultSet rsColName) {
-//        try {
-//            while (rsColName.next()) {
-//                columnNames.add(rsColName.getString(2));
-//                System.out.println(rsColName.getString(2));
-//            }
-//        } catch (SQLException ex) {
-//            Logger.getLogger(DatabaseTableModel.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return columnNames;
-//    }
     public void setDataSource(ResultSet rs) throws Exception {
         data.clear();
         columnNames.clear();
@@ -78,12 +67,10 @@ public class DatabaseTableModel extends AbstractTableModel {
         for (int i = 0; i < columnCount; i++) {
 
             columnNames.add(rsmd.getColumnName(i + 1));
-            System.out.println(rsmd.getColumnName(i + 1));
             Class type = Class.forName(rsmd.getColumnClassName(i + 1));
             columnTypes.add(type);
 
         }
-//        columnNames = setColumnName(rsColName); // в параметрах setDataSource был еще один ResultSet
 
         fireTableStructureChanged();
 
