@@ -219,6 +219,7 @@ public class TableFrame extends javax.swing.JFrame {
         Contact contact = getContact(id);
 
         AddContactFrame contactFrame = new AddContactFrame(this, contact);
+        deleteContact(id);
         contactFrame.setLocationRelativeTo(this);
         contactFrame.setVisible(true);
 
@@ -227,6 +228,12 @@ public class TableFrame extends javax.swing.JFrame {
     private void jmiDataDeleteContactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiDataDeleteContactActionPerformed
         int row = jtData.getSelectedRow();
         int id = (int) jtData.getValueAt(row, 0);
+        deleteContact(id);
+        loadData();
+    }//GEN-LAST:event_jmiDataDeleteContactActionPerformed
+
+    private void deleteContact(int id) {
+
         String sql = "DELETE FROM contacts WHERE id = " + id;
 
         try (Connection conn = DriverManager.getConnection(connection)) {
@@ -235,8 +242,7 @@ public class TableFrame extends javax.swing.JFrame {
         } catch (SQLException ex) {
             Logger.getLogger(TableFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
-        loadData();
-    }//GEN-LAST:event_jmiDataDeleteContactActionPerformed
+    }
 
     /**
      * @param args the command line arguments
