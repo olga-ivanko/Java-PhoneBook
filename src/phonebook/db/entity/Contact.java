@@ -30,7 +30,8 @@ public class Contact {
         this.skype = skype;
     }
 
-    public Contact(String fullName, String phoneNum, String email, String skype, String image) {
+    public Contact(Integer id, String fullName, String phoneNum, String email, String skype, String image) {
+        this.id = id;
         this.fullName = fullName;
         this.phoneNum = phoneNum;
         this.email = email;
