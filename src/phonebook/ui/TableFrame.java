@@ -45,14 +45,7 @@ public class TableFrame extends javax.swing.JFrame {
 
         try (Connection conn = DriverManager.getConnection(connection)) {
 
-//            columnNames = new ArrayList<>();
             Statement stmt = conn.createStatement();
-//            String sqlColNames = "PRAGMA TABLE_INFO('contacts')";
-//            ResultSet rseq = stmt.executeQuery(sqlColNames);
-//            while (rseq.next()) {
-//                columnNames.add(rseq.getString(2));
-//                System.out.println(rseq.getString(2));
-//            }
 
             String sqlData = "SELECT * FROM contacts";
             ResultSet rs = stmt.executeQuery(sqlData);
@@ -160,21 +153,36 @@ public class TableFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     public void saveContact(Contact cont) {
+        Integer id = cont.getId();
+        if (id != null) {
+            String sql = "UPDATE contacts SET name = ?, phone_number = ?, email = ?, skype = ?, image =? WHERE id = ?";
+            try (Connection conn = DriverManager.getConnection(connection)) {
+                PreparedStatement prepareStatement = conn.prepareStatement(sql);
+                prepareStatement.setString(1, cont.getFullName());
+                prepareStatement.setString(2, cont.getPhoneNum());
+                prepareStatement.setString(3, cont.getEmail());
+                prepareStatement.setString(4, cont.getSkype());
+                prepareStatement.setString(5, cont.getImage());
+                prepareStatement.setString(6, Integer.toString(cont.getId()));
+                prepareStatement.executeUpdate();
+            } catch (SQLException ex) {
+                Logger.getLogger(TableFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
-        String sql = "INSERT INTO contacts VALUES(null, ?, ?, ?, ?, ?)";
+        } else {
+            String sql = "INSERT INTO contacts VALUES(null, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = DriverManager.getConnection(connection)) {
-            PreparedStatement prepareStatement = conn.prepareStatement(sql);
-            prepareStatement.setString(1, cont.getFullName());
-            prepareStatement.setString(2, cont.getPhoneNum());
-            prepareStatement.setString(3, cont.getEmail());
-            prepareStatement.setString(4, cont.getSkype());
-            prepareStatement.setString(5, cont.getImage());
-
-            prepareStatement.executeUpdate();
-
-        } catch (SQLException ex) {
-            Logger.getLogger(TableFrame.class.getName()).log(Level.SEVERE, null, ex);
+            try (Connection conn = DriverManager.getConnection(connection)) {
+                PreparedStatement prepareStatement = conn.prepareStatement(sql);
+                prepareStatement.setString(1, cont.getFullName());
+                prepareStatement.setString(2, cont.getPhoneNum());
+                prepareStatement.setString(3, cont.getEmail());
+                prepareStatement.setString(4, cont.getSkype());
+                prepareStatement.setString(5, cont.getImage());
+                prepareStatement.executeUpdate();
+            } catch (SQLException ex) {
+                Logger.getLogger(TableFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         loadData();
@@ -202,7 +210,7 @@ public class TableFrame extends javax.swing.JFrame {
                 String skype = rs.getString("skype");
                 String image = rs.getString("image");
 
-                return new Contact(name, phone, mail, skype, image);
+                return new Contact(id, name, phone, mail, skype, image);
             }
         } catch (SQLException ex) {
             Logger.getLogger(TableFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -217,9 +225,7 @@ public class TableFrame extends javax.swing.JFrame {
 
         int id = (int) jtData.getValueAt(row, 0);
         Contact contact = getContact(id);
-
         AddContactFrame contactFrame = new AddContactFrame(this, contact);
-        deleteContact(id);
         contactFrame.setLocationRelativeTo(this);
         contactFrame.setVisible(true);
 
