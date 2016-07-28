@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -73,15 +75,25 @@ public class DatabaseTableModel extends AbstractTableModel {
         }
 
         fireTableStructureChanged();
+        Pattern pattern = Pattern.compile("\\+?(\\d{3})\\s*\\(?(\\d{2})\\)?\\s*(\\d{3})\\-?(\\d{2})\\-?(\\d{2})");
 
         while (rs.next()) {
 
             ArrayList row = new ArrayList();
             for (int i = 0; i < columnCount; i++) {
                 if (columnTypes.get(i) == String.class) {
-                    row.add(rs.getString(i + 1));
+                    Matcher m = pattern.matcher(rs.getString(i + 1));
+                    if (m.find()) {
+                        String newFormat = rs.getString(i + 1).format("+380 (%s) %s-%s-%s", m.group(2), m.group(3), m.group(4), m.group(5));
+                        System.out.println(newFormat);
+                        row.add(newFormat);
+                    } else {
+                        row.add(rs.getString(i + 1));
+                        System.out.println(rs.getString(i + 1));
+                    }
                 } else {
                     row.add(rs.getObject(i + 1));
+                    System.out.println(rs.getObject(i + 1));
                 }
             }
             synchronized (data) {
