@@ -75,7 +75,7 @@ public class DatabaseTableModel extends AbstractTableModel {
         }
 
         fireTableStructureChanged();
-        Pattern pattern = Pattern.compile("(\\d{1})(\\d{2})(\\d{3})(\\d{2})(\\d{2})");
+        Pattern pattern = Pattern.compile("\\+?(\\d{2})?\\s*\\(?(\\d{3})\\)?\\s*(\\d{3})\\-?(\\d{2})\\-?(\\d{2})");
 
         while (rs.next()) {
 
